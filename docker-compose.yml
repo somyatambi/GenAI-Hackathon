@@ -1,0 +1,38 @@
+services:
+  brainstormer-agent:
+    build: ./brainstormer-agent
+    env_file:
+      - .env
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+  critic-agent:
+    build: ./critic-agent
+    env_file:
+      - .env
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+  roadmap-agent:
+    build: ./roadmap-agent
+    env_file:
+      - .env
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+  task-agent:
+    build: ./task-agent
+    env_file:
+      - .env
+    environment:
+      - CEREBRAS_API_KEY=${CEREBRAS_API_KEY}  # Using Cerebras for ultra-fast task generation!
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}  # Fallback if Cerebras unavailable
+  pitch-deck-agent:
+    build: ./pitch-deck-agent
+    env_file:
+      - .env
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}  # Using Llama 3.3 70B for compelling storytelling
+  nginx-gateway:
+    image: nginx:latest
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
