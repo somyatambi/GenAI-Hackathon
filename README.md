@@ -5,8 +5,7 @@
 ---
 
 ## 🚀 Live Demo
-- **Frontend**: https://cognitive-canvas-hackathon.vercel.app
-- **Backend**: https://cognitive-canvas-hackathon.onrender.com
+- **Live Demo**: https://gen-ai-hackathon-wmd.vercel.app/
 
 ---
 
@@ -181,7 +180,7 @@ Watch AI agents generate content in real-time with immediate feedback.
 ## 🚀 Quick Start
 
 ### Live Demo
-**Try it now**: https://cognitive-canvas-hackathon.vercel.app
+**Try it now**: https://gen-ai-hackathon-wmd.vercel.app/
 
 ### Deployment
 
@@ -254,7 +253,7 @@ npm run dev
 
 ## 🔗 Links
 
-- **Live App**: https://cognitive-canvas-hackathon.vercel.app
+- **Live App**: https://gen-ai-hackathon-wmd.vercel.app/
 - **GitHub**: https://github.com/somyatambi/cognitive-canvas-hackathon
 
 ---
