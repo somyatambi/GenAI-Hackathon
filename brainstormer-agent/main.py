@@ -11,7 +11,7 @@ class AgentRequest(BaseModel):
     prompt: str
 
 app = FastAPI()
-
+ 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
