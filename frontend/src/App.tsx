@@ -38,6 +38,34 @@ const initialNodes: Node[] = [
 
 let id = 2;
 const getUniqueId = () => `${id++}`;
+const IDEA_HISTORY_KEY = 'cognitive-canvas-generated-ideas';
+const MAX_IDEA_HISTORY = 60;
+
+const readIdeaHistory = (): string[] => {
+  try {
+    const savedIdeas = localStorage.getItem(IDEA_HISTORY_KEY);
+    const parsedIdeas = savedIdeas ? JSON.parse(savedIdeas) : [];
+    return Array.isArray(parsedIdeas) ? parsedIdeas.filter((idea): idea is string => typeof idea === 'string') : [];
+  } catch {
+    return [];
+  }
+};
+
+const saveIdeaHistory = (response: string) => {
+  const newIdeas = response
+    .split('\n')
+    .map((line) => line.trim().replace(/^\d+[.)]\s*/, ''))
+    .filter((line) => line.length > 0 && line.length < 300);
+
+  if (newIdeas.length === 0) return;
+
+  const existingIdeas = readIdeaHistory();
+  const ideasByKey = new Map<string, string>();
+  [...existingIdeas, ...newIdeas].forEach((idea) => {
+    ideasByKey.set(idea.toLowerCase(), idea);
+  });
+  localStorage.setItem(IDEA_HISTORY_KEY, JSON.stringify(Array.from(ideasByKey.values()).slice(-MAX_IDEA_HISTORY)));
+};
 
 const App = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -75,9 +103,13 @@ const App = () => {
     setIsLoading(true);
     const endpoint = `${API_BASE_URL}/${agentType}`;
     const promptToSend = customPrompt || sourceNode.data.label;
+    const previousIdeas = agentType === 'brainstorm' ? readIdeaHistory() : [];
+    const uniquenessContext = previousIdeas.length > 0
+      ? `\n\n[PREVIOUSLY GENERATED IDEAS - DO NOT REPEAT OR PARAPHRASE]\n${previousIdeas.map((idea) => `- ${idea}`).join('\n')}\n[/PREVIOUSLY GENERATED IDEAS]`
+      : '';
     
     // Add persona context to prompt if provided
-    const finalPrompt = persona ? `[PERSONA: ${persona}]\n${promptToSend}` : promptToSend;
+    const finalPrompt = `${persona ? `[PERSONA: ${persona}]\n` : ''}${promptToSend}${uniquenessContext}`;
     
     try {
       if (agentType === 'roadmap') {
@@ -259,6 +291,10 @@ const App = () => {
         
         // Remove 'thinking' class after stream is complete
         setNodes((currentNodes) => currentNodes.map((node) => node.id === firstNodeId ? { ...node, className: 'new-node' } : node));
+
+        if (agentType === 'brainstorm' && !customPrompt) {
+          saveIdeaHistory(fullResponse);
+        }
         
         if (agentType === 'brainstorm' && !customPrompt) {
             const criticResponseStream = await fetch(`${API_BASE_URL}/criticize`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: fullResponse }) });

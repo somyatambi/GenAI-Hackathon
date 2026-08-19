@@ -225,8 +225,16 @@ async def stream_generator(prompt: str, model_identifier: str, system_prompt: st
         
         random_trigger = random.choice(variety_triggers)
         
-        # Add explicit anti-repetition instruction
-        anti_repeat_note = "CRITICAL: Do NOT generate any of these ideas: AI Mental Health Chatbot, Blockchain Carbon Credit, GitHub Code Review Bot, Virtual Event Planning, Student Podcast, Campus Events, Resume Templates, Canva Templates."
+        # The frontend supplies prior results so uniqueness survives across requests.
+        anti_repeat_note = """CRITICAL UNIQUENESS RULE:
+    Do not repeat, lightly rename, or paraphrase any idea in the previous-ideas block.
+    If the current concept resembles a previous idea, change the target customer, problem,
+    business model, and implementation approach enough to create a genuinely different idea.
+    The previous-ideas block is an exclusion list, not inspiration. Never mention it in your output.
+
+    Also avoid these known repetitions: AI Mental Health Chatbot, Blockchain Carbon Credit,
+    GitHub Code Review Bot, Virtual Event Planning, Student Podcast, Campus Events,
+    Resume Templates, Canva Templates."""
         
         # Create highly varied prompt
         varied_prompt = f"{prompt}\n\n{random_trigger}\n\n{anti_repeat_note}\n\n[Session: {random_seed}-{random_variation}]"
