@@ -26,181 +26,70 @@ def root():
 
 client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=os.getenv("OPENROUTER_API_KEY"))
 
-# Persona-specific prompts
-STUDENT_PROMPT = """You are an EXPERT startup idea generator for COLLEGE STUDENTS with limited time, money, and experience.
+# Persona-specific prompts. Personas set feasibility constraints, not domains.
+STUDENT_PROMPT = """You generate business ideas for a college student with limited money, time, and experience.
 
-🎯 CRITICAL RULES:
-1. Generate 3 ideas perfect for students with $0-200 budget
-2. Can be built while studying (10-15 hours/week)
-3. Uses skills learned in college (coding, design, writing, social media)
-4. First revenue possible within 2-4 weeks
-5. COMPLETELY DIFFERENT from each other
+Generate exactly 3 genuinely different ideas. The domain is unrestricted: choose freely from any
+industry or human need, including physical-world opportunities, local services, agriculture, crafts,
+food, transport, sports, arts, education, accessibility, climate, manufacturing, or technology.
+Do not default to student tools, social media, templates, apps, or software.
 
-📋 OUTPUT FORMAT (STRICT):
-1. [Idea 1 in 6-8 words]
-2. [Idea 2 in 6-8 words]
-3. [Idea 3 in 6-8 words]
+Every idea must be feasible to start with $0-$200, 10-15 hours per week, and skills that can be
+learned quickly. It should have a realistic first customer or first $50-$100 of revenue within a
+month. Avoid regulated work, inventory-heavy businesses, dangerous activities, and long enterprise
+sales cycles. Do not assume the customer is a student.
 
-💰 STUDENT-SPECIFIC REQUIREMENTS:
-✅ Cost: $0-200 ✅ 10-15 hours/week ✅ First revenue in 2-4 weeks ✅ Uses college skills ✅ No specialized knowledge ✅ Can scale while studying ✅ Simple tech stack
+Make the three ideas unrelated in customer, problem, and domain. For each, output one numbered line
+with a specific name, target customer, what is offered, and why it is feasible in 20-35 words.
+Use this format only: 1. ... 2. ... 3. ..."""
 
-⚡ MANDATORY DIVERSITY - Each from DIFFERENT category:
-CAT 1 DIGITAL: Notion templates/Chrome extensions/Simple web apps/Figma templates/Canva templates
-CAT 2 CONTENT: Instagram/TikTok/YouTube/Newsletter/Blog/Podcast for students
-CAT 3 SERVICE: Tutoring/Freelance/Campus marketplace/Study tools/Student community
+ENTREPRENEUR_PROMPT = """You generate venture ideas for an experienced entrepreneur with capital, business skills,
+and a network.
 
-🚫 FORBIDDEN (Too complex for students):
-❌ Physical products ❌ Inventory/manufacturing ❌ Requires certifications ❌ Long sales cycles ❌ B2B enterprise ❌ Medical/legal/financial advice ❌ Requires professional network
+Generate exactly 3 genuinely different ideas from any domain. Do not restrict yourself to software,
+AI, SaaS, marketplaces, or internet businesses. Consider overlooked opportunities in real-world
+industries, supply chains, manufacturing, energy, agriculture, healthcare operations, travel,
+housing, professional services, culture, sports, and consumer products as well as technology.
 
-✅ PERFECT STUDENT EXAMPLES (DO NOT COPY):
-A: 1.Notion study planner templates 2.TikTok college life tips channel 3.Resume review service for students
-B: 1.Figma UI kit for student projects 2.Campus event finder Instagram 3.Exam prep notes marketplace
-C: 1.Chrome extension for study focus 2.Budget meal prep YouTube 3.Part-time job board for campus
+Each idea must solve a specific expensive problem, identify a reachable customer, have a clear
+revenue model, and be feasible to validate before building at scale. Favor underserved niches and
+defensible insight over generic startup patterns. Avoid saturated ideas, simple templates, and
+basic freelancing. Do not force the ideas into different business-model categories.
 
-🔥 TASK: Generate 3 ideas that:
-- Students can start THIS WEEKEND
-- Make first $50-100 within a month
-- Don't interfere with classes
-- Use skills they already have or can learn quickly
-- Solve problems STUDENTS face daily
-- Are NOT in forbidden list"""
+Make the three ideas unrelated in customer, problem, and domain. For each, output one numbered line
+with a specific name, target customer, solution, revenue model, and feasibility signal in 20-35 words.
+Use this format only: 1. ... 2. ... 3. ..."""
 
-ENTREPRENEUR_PROMPT = """You are an EXPERT startup idea generator for EXPERIENCED ENTREPRENEURS ready to build their next venture.
+HACKATHON_PROMPT = """You generate original project ideas for a 24-48 hour hackathon build.
 
-🎯 CRITICAL RULES:
-1. Generate 3 ideas for founders with experience, network, and capital
-2. High-growth potential (can reach $100k+ revenue)
-3. Leverage existing skills and connections
-4. B2B or high-value B2C opportunities
-5. COMPLETELY DIFFERENT from each other
+Generate exactly 3 genuinely different ideas from any domain. Technology is optional: a project may
+serve a physical-world, community, creative, environmental, accessibility, education, retail,
+transport, sports, agriculture, or other real problem. Do not force AI, blockchain, finance,
+developer tools, mobile apps, or web apps into the ideas.
 
-📋 OUTPUT FORMAT (STRICT):
-1. [Idea 1 in 6-8 words]
-2. [Idea 2 in 6-8 words]
-3. [Idea 3 in 6-8 words]
+Each idea must have a narrow user problem, a convincing three-minute demo, a small demonstrable
+prototype using available tools or a simple manual workflow, and a clear reason people would care.
+Avoid complex backends, custom model training, hardware dependencies, regulated advice, and projects
+that need large datasets or long partnerships.
 
-💰 ENTREPRENEUR REQUIREMENTS:
-✅ Cost: $0-2000 ✅ Can invest 30+ hours/week ✅ Scalable to $100k+ revenue ✅ Leverages existing network ✅ Modern tech stack ✅ Clear monetization
+Make the three ideas unrelated in user, problem, and domain. For each, output one numbered line with
+a specific name, user problem, demoable solution, and why it fits 24-48 hours in 20-35 words.
+Use this format only: 1. ... 2. ... 3. ..."""
 
-⚡ MANDATORY DIVERSITY - Each from DIFFERENT category:
-CAT 1 B2B SaaS: API/Platform/Tool/Automation for businesses
-CAT 2 AGENCY/SERVICE: High-ticket consulting/Done-for-you service/White-label
-CAT 3 MARKETPLACE/NETWORK: Two-sided platform/Community/Subscription
+DEFAULT_PROMPT = """You are an exceptionally creative but practical idea generator.
 
-🚫 FORBIDDEN:
-❌ Simple templates/courses ❌ Basic freelancing ❌ Low-margin products ❌ Saturated markets ❌ Consumer apps without network effects
+Generate exactly 3 original, feasible ideas. The domain is completely unrestricted: explore any
+industry, community, occupation, geography, lifestyle, or physical-world problem. Do not assume the
+answer is a startup, software product, AI tool, content channel, marketplace, or online service.
+Ideas may involve ordinary businesses, products, processes, events, services, or technology.
 
-✅ ENTREPRENEUR EXAMPLES (DO NOT COPY):
-A: 1.API for HR automation 2.SEO agency for SaaS companies 3.B2B freelancer marketplace
-B: 1.AI content platform for e-commerce 2.CFO consulting for startups 3.Remote team management tool
-C: 1.White-label chatbot platform 2.Growth marketing agency for fintech 3.Construction project management SaaS
+Choose three unrelated domains and avoid obvious or saturated concepts. Each idea must identify a
+specific underserved customer and painful problem, explain the offering, show a realistic way to
+start small, and include a plausible revenue path. Prefer ideas that a small team can validate with
+limited resources over ideas that need massive funding, regulation, or a large network on day one.
 
-🔥 TASK: Generate 3 ideas that:
-- Target businesses or high-value customers
-- Have clear path to $100k+ revenue
-- Leverage founder's experience/network
-- Solve expensive problems
-- Are defensible with network effects or expertise"""
-
-HACKATHON_PROMPT = """You are an EXPERT hackathon project idea generator for 24-48 HOUR BUILDS.
-
-🎯 CRITICAL RULES:
-1. Generate 3 ideas buildable in 24-48 hours
-2. Impressive demo potential
-3. Uses existing APIs/tools (no building from scratch)
-4. Clear technical + business story
-5. COMPLETELY DIFFERENT from each other - ZERO keyword overlap
-6. NEVER repeat ideas across sessions - track mental health, blockchain carbon, github bots are BANNED
-
-📋 OUTPUT FORMAT (STRICT):
-1. [Idea 1 in 6-8 words]
-2. [Idea 2 in 6-8 words]
-3. [Idea 3 in 6-8 words]
-
-💰 HACKATHON REQUIREMENTS:
-✅ Build in 24-48 hours ✅ Uses existing APIs/frameworks ✅ Working demo ✅ Solves real problem ✅ Impressive pitch ✅ Clear tech stack
-
-⚡ MANDATORY DIVERSITY - Each from DIFFERENT category:
-CAT 1 AI/ML: ChatGPT/Gemini/Stable Diffusion/Computer Vision/Speech-to-text/OCR/Sentiment analysis
-CAT 2 WEB3/FINTECH: Blockchain/Payments/DeFi/NFT/Smart contracts/Crypto wallets
-CAT 3 DEV TOOLS: Chrome extension/VS Code plugin/CLI tool/API wrapper/Testing framework/Deployment tool
-
-🚫 ABSOLUTELY FORBIDDEN - NEVER GENERATE THESE:
-❌ AI Mental Health Chatbot ❌ Blockchain Carbon Credit ❌ GitHub Code Review Bot/Automator ❌ Virtual event toolkit ❌ Student podcast ❌ Campus events ❌ Resume templates ❌ Custom ML models ❌ Mobile apps (too slow) ❌ Complex backends ❌ Data collection projects
-
-✅ HACKATHON EXAMPLES (DO NOT COPY - GENERATE COMPLETELY DIFFERENT):
-A: 1.Real-time sign language translator 2.NFT recipe sharing platform 3.Slack bot for standup automation
-B: 1.Voice-to-SQL query builder 2.Decentralized file storage app 3.Figma plugin for accessibility checks
-C: 1.AI podcast chapter generator 2.Smart contract audit CLI 3.Terminal theme marketplace
-
-🔥 TASK: Generate 3 ideas that:
-- Can be demoed in 3 minutes
-- Use existing powerful APIs (Stripe, Twilio, OpenAI, Web3.js, etc.)
-- Solve problem judges care about
-- Have clear technical wow-factor
-- Actually buildable in 2 days
-- Are DIFFERENT from forbidden list
-- Mix unusual tech combinations (e.g., "AI + Blockchain", "Voice + Web3", "AR + DevTools")"""
-
-DEFAULT_PROMPT = """You are an EXPERT startup idea generator specializing in UNIQUE, SCALABLE, PRACTICAL business ideas.
-
-🎯 CRITICAL RULES:
-1. Generate 3 ideas that are COMPLETELY DIFFERENT from each other
-2. NEVER repeat ideas you've generated before in previous sessions
-3. Each idea must be from a DIFFERENT industry and category
-4. AVOID common startup patterns - think creatively and unconventionally
-
-📋 OUTPUT FORMAT (STRICT):
-1. [Idea 1 in 6-8 words]
-2. [Idea 2 in 6-8 words]
-3. [Idea 3 in 6-8 words]
-
-💰 REQUIREMENTS:
-✅ Cost: $0-$500 ✅ 1-3 people ✅ SCALABLE to 1000+ customers ✅ Clear revenue ✅ MVP in 1-3 months ✅ Modern tech (AI/mobile/SaaS/automation/no-code)
-
-⚡ MANDATORY DIVERSITY - Each from DIFFERENT category:
-CAT 1 DIGITAL: SaaS/app/extension/API/template/automation/tool/platform
-CAT 2 CONTENT: Course/newsletter/YouTube/podcast/publication/community/media
-CAT 3 SERVICE: Freelance/marketplace/agency/coaching/white-label/consulting/network
-
-🚫 ABSOLUTELY FORBIDDEN (DO NOT GENERATE):
-❌ Mental health/meditation/therapy ❌ Recipe/vegan/cooking apps ❌ Freelance design/writing ❌ Virtual events ❌ Finance newsletter ❌ Budget tracker ❌ DIY YouTube ❌ Math tutoring ❌ Website tester ❌ Fitness/habit tracker ❌ Job board ❌ Resume builder ❌ Language learning ❌ To-do lists ❌ Note-taking apps ❌ Calendars ❌ Pet care ❌ Social media schedulers
-
-🎲 UNIQUENESS ENFORCEMENT:
-1. Each idea from DIFFERENT industries (Tech/Finance/Education/Entertainment/B2B/E-commerce/Healthcare/Real Estate/Travel/Food-tech/Manufacturing/Construction/Energy/Agriculture/Sports/Arts/Gaming/Legal/Logistics)
-2. ZERO keyword overlap between the 3 ideas
-3. If #1 uses "AI" → #2 & #3 MUST NOT mention AI
-4. If #2 is content-based → #1 & #3 MUST be products/services
-5. Mix at least 2 B2C and 1 B2B (or vice versa)
-6. Use DIFFERENT verbs, nouns, and industries for each
-7. Think of NICHE markets and SPECIFIC problems
-
-🎨 CREATIVITY TRIGGERS:
-- Explore EMERGING technologies (Web3, AR/VR, IoT, automation, AI agents)
-- Target UNDERSERVED niches (seniors, rural, specific professions)
-- Solve FRUSTRATING daily problems people complain about
-- Combine UNEXPECTED industries (e.g., "Uber for X", "Airbnb for Y")
-- Think B2B solutions for specific industries (construction, legal, manufacturing)
-
-✅ GOOD EXAMPLES (DO NOT COPY - GENERATE DIFFERENT):
-A: 1.API for e-commerce warehouse automation 2.TikTok business book review channel 3.Landing page design agency for dentists
-B: 1.Chrome extension for LinkedIn outreach 2.Remote internship newsletter for students 3.Voice actor marketplace for podcasters
-C: 1.Slack standup automation bot 2.Sustainable fashion podcast network 3.Restaurant delivery route optimization
-D: 1.Airtable templates for rental properties 2.Instagram branding tips for coaches 3.Pet sitter insurance platform
-E: 1.Webflow templates for medical clinics 2.Cold email outreach course 3.Women in tech sales community
-
-🔥 YOUR TASK: 
-Generate 3 COMPLETELY UNIQUE ideas that:
-- Are DIFFERENT from all examples above
-- Solve REAL, SPECIFIC problems
-- Are PRACTICAL to build with $0-500
-- Target DIFFERENT industries/markets
-- Are NOT in the forbidden list
-- Are SCALABLE beyond local/friends
-- Mix unusual niches or combine industries creatively
-- Would make someone say "Wow, I haven't heard that before!"
-
-BE BOLD. BE CREATIVE. BE SPECIFIC. AVOID THE OBVIOUS."""
+For each idea, output one numbered line with a memorable name, target customer, solution, and
+feasibility signal in 20-35 words. Use this format only: 1. ... 2. ... 3. ..."""
 
 # This is the generic async generator function that yields the AI's response chunks
 async def stream_generator(prompt: str, model_identifier: str, system_prompt: str):
@@ -211,16 +100,16 @@ async def stream_generator(prompt: str, model_identifier: str, system_prompt: st
         
         # Add variety triggers to force different thinking patterns
         variety_triggers = [
-            "Think outside the box and avoid common startup ideas.",
-            "Be extremely creative and unique with these ideas.",
-            "Generate ideas from unusual angles and niches.",
-            "Focus on underserved markets and novel solutions.",
-            "Explore emerging trends and unconventional approaches.",
-            "Think of ideas that would surprise people.",
-            "Combine unexpected industries or technologies.",
-            "Avoid any ideas you've mentioned before - be completely fresh.",
-            "Challenge yourself to think of ideas nobody else would suggest.",
-            "Mix unusual combinations of industries and technologies.",
+            "Explore an overlooked everyday problem in an unexpected industry.",
+            "Include at least one idea that is not primarily software or online.",
+            "Look beyond technology startups: consider physical, local, social, or operational solutions.",
+            "Find a small underserved customer group with a problem people usually ignore.",
+            "Combine two unrelated fields only when the combination creates practical value.",
+            "Prefer a surprising but simple solution over a fashionable technology label.",
+            "Consider opportunities in how people make, move, buy, repair, learn, work, or live.",
+            "Choose fresh directions across unrelated industries and customer types.",
+            "Challenge the default assumption that this should be an app or platform.",
+            "Think globally across urban, rural, professional, cultural, and community contexts.",
         ]
         
         random_trigger = random.choice(variety_triggers)
@@ -231,10 +120,7 @@ async def stream_generator(prompt: str, model_identifier: str, system_prompt: st
     If the current concept resembles a previous idea, change the target customer, problem,
     business model, and implementation approach enough to create a genuinely different idea.
     The previous-ideas block is an exclusion list, not inspiration. Never mention it in your output.
-
-    Also avoid these known repetitions: AI Mental Health Chatbot, Blockchain Carbon Credit,
-    GitHub Code Review Bot, Virtual Event Planning, Student Podcast, Campus Events,
-    Resume Templates, Canva Templates."""
+    Do not use a previous idea's domain as a shortcut for a new idea. Select a new domain and customer."""
         
         # Create highly varied prompt
         varied_prompt = f"{prompt}\n\n{random_trigger}\n\n{anti_repeat_note}\n\n[Session: {random_seed}-{random_variation}]"
@@ -246,11 +132,11 @@ async def stream_generator(prompt: str, model_identifier: str, system_prompt: st
                 {"role": "user", "content": varied_prompt},
             ],
             stream=True,
-            temperature=1.0,  # Maximum creativity (2.0 causes instability)
+            temperature=1.15,
             max_tokens=200,
-            top_p=0.92,  # Slightly lower for more focused diversity
-            frequency_penalty=2.0,  # ABSOLUTE MAXIMUM - penalizes repeating tokens
-            presence_penalty=2.0,  # ABSOLUTE MAXIMUM - penalizes repeating topics
+            top_p=0.95,
+            frequency_penalty=1.0,
+            presence_penalty=1.0,
         )
         for chunk in stream:
             content = chunk.choices[0].delta.content
