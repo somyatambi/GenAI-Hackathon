@@ -181,7 +181,7 @@ Watch AI agents generate content in real-time with immediate feedback.
 ## 🚀 Quick Start
 
 ### Live Demo
-**Try it now**: https://cognitive-canvas-hackathon.vercel.app
+**Try it now**: https://gen-ai-hackathon-wmd.vercel.app/
 
 ### Deployment
 
