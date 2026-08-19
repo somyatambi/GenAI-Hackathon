@@ -5,8 +5,8 @@
 ---
 
 ## 🚀 Live Demo
-- **Frontend**: https://cognitive-canvas-hackathon.vercel.app
-- **Backend**: https://cognitive-canvas-hackathon.onrender.com
+- **Frontend**: https://gen-ai-hackathon-wmd.vercel.app
+- **Backend**: https://genai-hackathon-xy9k.onrender.com
 
 ---
 
@@ -254,7 +254,7 @@ npm run dev
 
 ## 🔗 Links
 
-- **Live App**: https://cognitive-canvas-hackathon.vercel.app
+- **Live App**: https://gen-ai-hackathon-wmd.vercel.app
 - **GitHub**: https://github.com/somyatambi/cognitive-canvas-hackathon
 
 ---

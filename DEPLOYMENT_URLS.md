@@ -1,7 +1,7 @@
 # Deployment URLs
 
-- **Frontend**: https://cognitive-canvas-hackathon.vercel.app
-- **Backend**: Deployed on Render
+- **Frontend**: https://gen-ai-hackathon-wmd.vercel.app
+- **Backend**: https://genai-hackathon-xy9k.onrender.com
 - **GitHub**: https://github.com/somyatambi/cognitive-canvas-hackathon
 
 ## Setup
